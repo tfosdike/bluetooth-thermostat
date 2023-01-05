@@ -20,6 +20,7 @@ heapless = "0.6.1"
 messages = { path = "../../messages" }
 panic-probe = { version = "0.2.0", features = ["print-defmt"] }
 postcard = "0.5.2"
+nrf-softdevice-s140 = {git = "https://github.com/embassy-rs/nrf-softdevice"}
 
 [features]
 default = ['defmt-default']

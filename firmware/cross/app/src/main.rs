@@ -10,6 +10,7 @@ use heapless::{consts, Vec};
 use messages::{Host2Target, Measurement, Target2Host};
 use panic_probe as _;
 use rtic::cyccnt::U32Ext;
+use nrf_softdevice_s140;
 
 #[rtic::app(device = board::pac, monotonic = rtic::cyccnt::CYCCNT)]
 const APP: () = {

@@ -3,5 +3,6 @@ members = [
   "host-target-tests",
   "messages",
   "scd30",
+  "MCP9601T",
   "xtask",
 ]

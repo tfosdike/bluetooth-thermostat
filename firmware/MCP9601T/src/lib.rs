@@ -22,8 +22,8 @@ pub struct SensorData {
     pub local_temperature_c: f32,
 }
 
-/// A SCD30 sensor on the I2C bus `I`
-pub struct mcp9601<I>(I)
+/// A MCP9601 sensor on the I2C bus `I`
+pub struct Mcp9601<I>(I)
 where
     I: i2c::Read + i2c::Write;
 
@@ -38,16 +38,17 @@ pub enum Error<E> {
     WiringFault,
     /// local out-of-range fault
     ColdJunctionFault,
+    ConfigFault,
 }
 
-impl<E, I> mcp9601<I>
+impl<E, I> Mcp9601<I>
 where
     I: i2c::Read<Error = E> + i2c::Write<Error = E>,
 {
-    /// Initializes the SCD30 driver.
+    /// Initializes the MCP9601 driver.
     /// This consumes the I2C bus `I`
     pub fn init(i2c: I) -> Self {
-        mcp9601(i2c)
+        Mcp9601(i2c)
     }
     
     /// self-test
@@ -109,7 +110,7 @@ where
           'E' => {wr_buffer[1] = 0x50;},
           'B' => {wr_buffer[1] = 0x60;},
           'R' => {wr_buffer[1] = 0x70;},
-          _   => (),
+          _   => {return Err(Error::ConfigFault);},
         }
         self.0.write(ADDRESS, &wr_buffer).map_err(Error::I2c)?;
         let wr_buffer: [u8;2]=[DEVICE_CONFIG_REG,0];
@@ -126,10 +127,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{Error, mcp9601, ADDRESS,HOT_JUNCTION_REG};
+    use super::{Error, Mcp9601, ADDRESS,HOT_JUNCTION_REG};
     use embedded_hal_mock::i2c;
 
-    #[test]
+    // check temperature calculation from registers is done correctly
+    #[test] 
     fn get_hot_junction() {
         let expectations = vec![
             i2c::Transaction::write(ADDRESS, vec![HOT_JUNCTION_REG]),
@@ -137,7 +139,7 @@ mod tests {
         ];
         let mock = i2c::Mock::new(&expectations);
 
-        let mut mcp = mcp9601::init(mock);
+        let mut mcp = Mcp9601::init(mock);
         let temperature = mcp.get_hot_junction().unwrap();
         assert!((temperature-1.0).abs() < 0.001);
 
